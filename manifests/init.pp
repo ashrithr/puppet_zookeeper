@@ -34,21 +34,22 @@
 
 class zookeeper {
 
-  require zookeeper::repo
-
   class client {
+    require zookeeper::repo
     package { "zookeeper":
       ensure => installed,
+      require => Yumrepo["cloudera-repo"],
     }
   }
 
   class server(
       $myid,
       $ensemble = ['localhost:2888:3888'],
-    )
-    {
+    ) {
+    require zookeeper::repo
     package { "zookeeper-server":
       ensure => installed,
+      require => Yumrepo["cloudera-repo"],
     }
 
     service { "zookeeper-server":
@@ -57,7 +58,11 @@ class zookeeper {
       hasrestart => true,
       hasstatus => true,
       require => [ Package["zookeeper-server"], Exec["zookeeper-server-init"] ],
-      subscribe => [ File[ "zookeeper-conf", "zookeeper-myid", "zookeeper-setjavapath" ] ],
+      subscribe => [ File[  "zookeeper-conf",
+                            "zookeeper-myid"
+                            # "zookeeper-setjavapath"
+                          ]
+                    ],
     }
 
     file { "/etc/zookeeper/conf/zoo.cfg":
@@ -68,15 +73,15 @@ class zookeeper {
 
     file { "/var/lib/zookeeper/myid":
       alias => "zookeeper-myid",
-      content => inline_template("<%= myid %>"),
+      content => inline_template("<%= @myid %>"),
       require => Package["zookeeper-server"],
     }
 
-    file { "/etc/default/bigtop-utils":
-      alias => "zookeeper-setjavapath",
-      content => template("zookeeper/bigtop-utils.erb"),
-      require => Package["zookeeper-server"],
-    }
+    # file { "/etc/default/bigtop-utils":
+    #   alias => "zookeeper-setjavapath",
+    #   content => template("zookeeper/bigtop-utils.erb"),
+    #   require => Package["zookeeper-server"],
+    # }
 
     exec { "zookeeper-server-init":
       command => "/usr/bin/zookeeper-server-initialize",

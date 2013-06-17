@@ -5,4 +5,8 @@ class zookeeper::repo {
     enabled => 1,
     gpgcheck => 0,
   }
+  exec { "refresh-yum":
+    command => "/usr/bin/yum clean all",
+    require => Yumrepo['cloudera-repo'],
+  }
 }
