@@ -14,6 +14,9 @@
 # [*server::ensemble*]
 #	  zookeeper ensemble, array of zookeeper hosts with port numbers
 #
+# [*server::java_home*]
+#   override default java home path for zookeeper
+#
 # === Variables
 #
 # Nothing.
@@ -29,6 +32,7 @@
 #	class { "zookeeper::server":
 #		myid 	 => "0",
 #		ensemble => ["zk1.cw.com:2888:3888", "zk2.cw.com:2888:3888", "zk3.cw.com:2888:3888"],
+#   java_home => '/opt/java/jdk1.6.0_31'
 #	}
 #
 
@@ -45,6 +49,7 @@ class zookeeper {
   class server(
       $myid,
       $ensemble = ['localhost:2888:3888'],
+      $java_home = undef,
     ) {
     require zookeeper::repo
     package { "zookeeper-server":
@@ -60,7 +65,7 @@ class zookeeper {
       require => [ Package["zookeeper-server"], Exec["zookeeper-server-init"] ],
       subscribe => [ File[  "zookeeper-conf",
                             "zookeeper-myid"
-                            # "zookeeper-setjavapath"
+                            "zookeeper-setjavapath"
                           ]
                     ],
     }
@@ -77,11 +82,11 @@ class zookeeper {
       require => Package["zookeeper-server"],
     }
 
-    # file { "/etc/default/bigtop-utils":
-    #   alias => "zookeeper-setjavapath",
-    #   content => template("zookeeper/bigtop-utils.erb"),
-    #   require => Package["zookeeper-server"],
-    # }
+    file { "/etc/default/bigtop-utils":
+      alias => "zookeeper-setjavapath",
+      content => template("zookeeper/bigtop-utils.erb"),
+      require => Package["zookeeper-server"],
+    }
 
     exec { "zookeeper-server-init":
       command => "/usr/bin/zookeeper-server-initialize",
