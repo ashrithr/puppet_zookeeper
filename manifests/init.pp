@@ -52,6 +52,7 @@ class zookeeper {
       $java_home = undef,
     ) {
     require zookeeper::repo
+    include java::params
     package { "zookeeper-server":
       ensure => installed,
       require => Yumrepo["cloudera-repo"],
@@ -64,7 +65,7 @@ class zookeeper {
       hasstatus => true,
       require => [ Package["zookeeper-server"], Exec["zookeeper-server-init"] ],
       subscribe => [ File[  "zookeeper-conf",
-                            "zookeeper-myid"
+                            "zookeeper-myid",
                             "zookeeper-setjavapath"
                           ]
                     ],

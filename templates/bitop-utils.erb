@@ -1,0 +1,8 @@
+# File managed by Puppet
+
+# Override JAVA_HOME detection for all bigtop packages
+<% if @java_home -%>
+export JAVA_HOME=<%= @java_home %>
+<% else -%>
+#export JAVA_HOME
+<% end -%>
